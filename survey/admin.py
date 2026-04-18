@@ -1,7 +1,7 @@
+import csv
 from io import BytesIO
 from tempfile import NamedTemporaryFile
 
-import pandas as pd
 from django import forms
 from django.contrib import admin, messages
 from django.http import HttpRequest, HttpResponse
@@ -9,7 +9,7 @@ from django.shortcuts import redirect, render
 from django.urls import path
 from django.utils.text import slugify
 from numbers_parser import Document
-from openpyxl import Workbook
+from openpyxl import Workbook, load_workbook
 from openpyxl.utils import get_column_letter
 
 from .models import Answer, FeedbackSession, Question, Subject, Teacher
@@ -71,23 +71,23 @@ class ImportTeachersSubjectsMixin:
         return render(request, self.import_template_name, context)
 
     def _import_records(self, file_obj):
-        dataframe = self._read_dataframe(file_obj)
+        headers, rows = self._read_rows(file_obj)
         teacher_column = self._resolve_column(
-            dataframe.columns,
+            headers,
             {"teacher", "teacher_name", "full_name", "mugallym", "mugallym_ady"},
         )
 
         if self.model is Teacher:
-            created_teachers = self._import_teachers_only(dataframe, teacher_column)
+            created_teachers = self._import_teachers_only(rows, teacher_column)
             return f"Import tamamlandy. Taze mugallym: {created_teachers}."
 
         subject_column = self._resolve_column(
-            dataframe.columns,
+            headers,
             {"subject", "subject_name", "name", "ders", "ders_ady"},
         )
         created_teachers, created_subjects, linked_subjects = (
             self._import_teachers_and_subjects(
-                dataframe, teacher_column, subject_column
+                rows, teacher_column, subject_column
             )
         )
         return (
@@ -97,11 +97,11 @@ class ImportTeachersSubjectsMixin:
             f"baglanan ders: {linked_subjects}."
         )
 
-    def _import_teachers_only(self, dataframe, teacher_column):
+    def _import_teachers_only(self, rows, teacher_column):
         created_teachers = 0
 
-        for value in dataframe[teacher_column].fillna(""):
-            teacher_name = str(value).strip()
+        for row in rows:
+            teacher_name = self._clean_value(row.get(teacher_column))
             if not teacher_name:
                 continue
 
@@ -111,15 +111,14 @@ class ImportTeachersSubjectsMixin:
 
         return created_teachers
 
-    def _import_teachers_and_subjects(self, dataframe, teacher_column, subject_column):
-
+    def _import_teachers_and_subjects(self, rows, teacher_column, subject_column):
         created_teachers = 0
         created_subjects = 0
         linked_subjects = 0
 
-        for row in dataframe[[teacher_column, subject_column]].fillna("").itertuples(index=False):
-            teacher_name = str(row[0]).strip()
-            subject_name = str(row[1]).strip()
+        for row in rows:
+            teacher_name = self._clean_value(row.get(teacher_column))
+            subject_name = self._clean_value(row.get(subject_column))
 
             if not teacher_name or not subject_name:
                 continue
@@ -141,17 +140,58 @@ class ImportTeachersSubjectsMixin:
 
         return created_teachers, created_subjects, linked_subjects
 
-    def _read_dataframe(self, file_obj):
+    def _read_rows(self, file_obj):
         filename = file_obj.name.lower()
 
         if filename.endswith(".xlsx"):
-            return pd.read_excel(file_obj)
+            return self._read_excel_rows(file_obj)
         if filename.endswith(".csv"):
-            return pd.read_csv(file_obj)
+            return self._read_csv_rows(file_obj)
         if filename.endswith(".numbers"):
             return self._read_numbers_file(file_obj)
 
         raise ValueError("Faýlyň görnüşi .xlsx, .csv ýa-da .numbers bolmaly.")
+
+    def _read_excel_rows(self, file_obj):
+        workbook = load_workbook(file_obj, read_only=True, data_only=True)
+        worksheet = workbook.active
+        row_iter = worksheet.iter_rows(values_only=True)
+
+        try:
+            raw_headers = next(row_iter)
+        except StopIteration as exc:
+            raise ValueError(".xlsx faýly boş.") from exc
+
+        headers = self._normalize_headers(raw_headers)
+        rows = []
+
+        for row in row_iter:
+            row_data = {}
+            for index, header in enumerate(headers):
+                value = row[index] if index < len(row) else ""
+                row_data[header] = value
+            rows.append(row_data)
+
+        return headers, rows
+
+    def _read_csv_rows(self, file_obj):
+        file_obj.seek(0)
+        decoded_lines = file_obj.read().decode("utf-8-sig").splitlines()
+        reader = csv.DictReader(decoded_lines)
+
+        if not reader.fieldnames:
+            raise ValueError(".csv faýlynda sütün atlary ýok.")
+
+        headers = self._normalize_headers(reader.fieldnames)
+        rows = []
+
+        for raw_row in reader:
+            row = {}
+            for original_header, normalized_header in zip(reader.fieldnames, headers):
+                row[normalized_header] = raw_row.get(original_header, "")
+            rows.append(row)
+
+        return headers, rows
 
     def _read_numbers_file(self, file_obj):
         with NamedTemporaryFile(suffix=".numbers") as temp_file:
@@ -174,17 +214,34 @@ class ImportTeachersSubjectsMixin:
             if not rows:
                 raise ValueError(".numbers faýly boş.")
 
-            headers = [str(cell).strip() if cell is not None else "" for cell in rows[0]]
+            headers = self._normalize_headers(rows[0])
             data_rows = rows[1:]
+            normalized_rows = []
 
-            if not any(headers):
-                raise ValueError(".numbers faýlynda sütün atlary ýok.")
+            for row in data_rows:
+                row_data = {}
+                for index, header in enumerate(headers):
+                    value = row[index] if index < len(row) else ""
+                    row_data[header] = value
+                normalized_rows.append(row_data)
 
-            normalized_headers = []
-            for index, header in enumerate(headers, start=1):
-                normalized_headers.append(header or f"column_{index}")
+            return headers, normalized_rows
 
-            return pd.DataFrame(data_rows, columns=normalized_headers)
+    def _normalize_headers(self, raw_headers):
+        headers = []
+        for index, header in enumerate(raw_headers, start=1):
+            cleaned = self._clean_value(header)
+            headers.append(cleaned or f"column_{index}")
+
+        if not any(headers):
+            raise ValueError("Faýlda sütün atlary ýok.")
+
+        return headers
+
+    def _clean_value(self, value):
+        if value is None:
+            return ""
+        return str(value).strip()
 
     def _resolve_column(self, columns, candidates):
         normalized = {slugify(column).replace("-", "_"): column for column in columns}
