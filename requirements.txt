@@ -1,3 +1,4 @@
 django
 openpyxl
 django-jazzmin
+tzdata
