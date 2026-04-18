@@ -12,8 +12,8 @@ The project has two main parts:
 - Dynamic subject loading by selected teacher
 - Dynamic question loading by lesson type
 - Admin panel styled with `django-jazzmin`
-- Import teachers from `.xlsx`, `.csv`, and `.numbers`
-- Import subjects by teacher from `.xlsx`, `.csv`, and `.numbers`
+- Import teachers from `.xlsx` and `.csv`
+- Import subjects by teacher from `.xlsx` and `.csv`
 - Export feedback sessions and answers to Excel
 - Example subject import files included in `examples/`
 
@@ -22,10 +22,8 @@ The project has two main parts:
 - Python 3.10+
 - Django 5.2
 - SQLite
-- Pandas
 - OpenPyXL
 - Jazzmin
-- numbers-parser
 
 ## Project Structure
 
@@ -128,7 +126,6 @@ Use the `Excel import` button and upload one of:
 
 - `.xlsx`
 - `.csv`
-- `.numbers`
 
 Accepted teacher column names:
 

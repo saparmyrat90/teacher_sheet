@@ -1,6 +1,5 @@
 import csv
 from io import BytesIO
-from tempfile import NamedTemporaryFile
 
 from django import forms
 from django.contrib import admin, messages
@@ -8,7 +7,6 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
 from django.urls import path
 from django.utils.text import slugify
-from numbers_parser import Document
 from openpyxl import Workbook, load_workbook
 from openpyxl.utils import get_column_letter
 
@@ -17,7 +15,7 @@ from .models import Answer, FeedbackSession, Question, Subject, Teacher
 
 class ExcelUploadForm(forms.Form):
     file = forms.FileField(
-        help_text=" .xlsx, .csv we .numbers faýllary goldanylýar."
+        help_text=".xlsx we .csv faýllary goldanylýar."
     )
 
 
@@ -147,10 +145,8 @@ class ImportTeachersSubjectsMixin:
             return self._read_excel_rows(file_obj)
         if filename.endswith(".csv"):
             return self._read_csv_rows(file_obj)
-        if filename.endswith(".numbers"):
-            return self._read_numbers_file(file_obj)
 
-        raise ValueError("Faýlyň görnüşi .xlsx, .csv ýa-da .numbers bolmaly.")
+        raise ValueError("Faýlyň görnüşi .xlsx ýa-da .csv bolmaly.")
 
     def _read_excel_rows(self, file_obj):
         workbook = load_workbook(file_obj, read_only=True, data_only=True)
@@ -192,40 +188,6 @@ class ImportTeachersSubjectsMixin:
             rows.append(row)
 
         return headers, rows
-
-    def _read_numbers_file(self, file_obj):
-        with NamedTemporaryFile(suffix=".numbers") as temp_file:
-            if hasattr(file_obj, "chunks"):
-                for chunk in file_obj.chunks():
-                    temp_file.write(chunk)
-            else:
-                temp_file.write(file_obj.read())
-            temp_file.flush()
-
-            document = Document(temp_file.name)
-            if not document.sheets:
-                raise ValueError(".numbers faýlynda sahypa tapylmady.")
-
-            table = document.sheets[0].tables[0] if document.sheets[0].tables else None
-            if table is None:
-                raise ValueError(".numbers faýlynda tablisa tapylmady.")
-
-            rows = list(table.rows(values_only=True))
-            if not rows:
-                raise ValueError(".numbers faýly boş.")
-
-            headers = self._normalize_headers(rows[0])
-            data_rows = rows[1:]
-            normalized_rows = []
-
-            for row in data_rows:
-                row_data = {}
-                for index, header in enumerate(headers):
-                    value = row[index] if index < len(row) else ""
-                    row_data[header] = value
-                normalized_rows.append(row_data)
-
-            return headers, normalized_rows
 
     def _normalize_headers(self, raw_headers):
         headers = []
