@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="tk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anonim Sowalnama</title>
+    <style>
+        :root {
+            --bg: #f4efe6;
+            --panel: #fffdf8;
+            --ink: #1f2933;
+            --muted: #6b7280;
+            --line: #d7c9b6;
+            --primary: #0f766e;
+            --primary-dark: #115e59;
+            --accent: #c2410c;
+            --soft: #efe4d2;
+            --shadow: 0 20px 50px rgba(73, 52, 24, 0.12);
+            --radius: 24px;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Georgia, "Times New Roman", serif;
+            color: var(--ink);
+            background:
+                radial-gradient(circle at top left, rgba(194, 65, 12, 0.12), transparent 28%),
+                radial-gradient(circle at bottom right, rgba(15, 118, 110, 0.14), transparent 32%),
+                linear-gradient(180deg, #f7f2ea 0%, #efe7da 100%);
+            min-height: 100vh;
+        }
+
+        .page {
+            width: min(100%, 920px);
+            margin: 0 auto;
+            padding: 32px 16px 56px;
+        }
+
+        .hero {
+            padding: 24px 8px 18px;
+        }
+
+        .eyebrow {
+            display: inline-block;
+            margin-bottom: 12px;
+            padding: 6px 12px;
+            border-radius: 999px;
+            background: rgba(15, 118, 110, 0.1);
+            color: var(--primary-dark);
+            font-size: 13px;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+
+        h1 {
+            margin: 0 0 10px;
+            font-size: clamp(2rem, 5vw, 3.4rem);
+            line-height: 0.95;
+        }
+
+        .lead {
+            max-width: 58ch;
+            margin: 0;
+            color: var(--muted);
+            font-size: 1.02rem;
+            line-height: 1.7;
+        }
+
+        .shell {
+            margin-top: 22px;
+            background: rgba(255, 253, 248, 0.82);
+            border: 1px solid rgba(215, 201, 182, 0.9);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            backdrop-filter: blur(8px);
+        }
+
+        .section {
+            padding: 24px;
+            border-bottom: 1px solid rgba(215, 201, 182, 0.7);
+        }
+
+        .section:last-child {
+            border-bottom: 0;
+        }
+
+        .section-title {
+            margin: 0 0 16px;
+            font-size: 1.15rem;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 16px;
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .field.full {
+            grid-column: 1 / -1;
+        }
+
+        label {
+            font-size: 0.96rem;
+            font-weight: 700;
+        }
+
+        .hint {
+            color: var(--muted);
+            font-size: 0.88rem;
+            margin: -2px 0 0;
+        }
+
+        select,
+        textarea,
+        button {
+            font: inherit;
+        }
+
+        select,
+        textarea {
+            width: 100%;
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            background: #fff;
+            color: var(--ink);
+            padding: 14px 16px;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+        }
+
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(15, 118, 110, 0.12);
+        }
+
+        select:disabled {
+            background: #f7f3ec;
+            color: #8b8f97;
+            cursor: not-allowed;
+        }
+
+        textarea {
+            min-height: 130px;
+            resize: vertical;
+        }
+
+        .questions-header {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            align-items: baseline;
+            margin-bottom: 16px;
+        }
+
+        .questions-note {
+            font-size: 0.9rem;
+            color: var(--muted);
+        }
+
+        .empty-state {
+            padding: 18px;
+            border: 1px dashed var(--line);
+            border-radius: 18px;
+            color: var(--muted);
+            background: rgba(239, 228, 210, 0.45);
+        }
+
+        .question-card {
+            padding: 18px;
+            margin-bottom: 14px;
+            border: 1px solid rgba(215, 201, 182, 0.9);
+            border-radius: 20px;
+            background: linear-gradient(180deg, #fffefb 0%, #faf6ef 100%);
+        }
+
+        .question-text {
+            margin: 0 0 14px;
+            font-weight: 700;
+            line-height: 1.55;
+        }
+
+        .score-grid {
+            display: grid;
+            grid-template-columns: repeat(6, minmax(0, 1fr));
+            gap: 8px;
+        }
+
+        .score-option {
+            position: relative;
+        }
+
+        .score-option input {
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .score-option span {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 52px;
+            border-radius: 16px;
+            border: 1px solid var(--line);
+            background: #fff;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+        }
+
+        .score-option input:checked + span {
+            border-color: var(--primary);
+            background: rgba(15, 118, 110, 0.12);
+            color: var(--primary-dark);
+            transform: translateY(-1px);
+        }
+
+        .submit-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 16px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .privacy-note {
+            color: var(--muted);
+            font-size: 0.92rem;
+            max-width: 32ch;
+        }
+
+        button {
+            border: 0;
+            border-radius: 999px;
+            padding: 14px 24px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: #fff;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 14px 30px rgba(15, 118, 110, 0.22);
+            transition: transform 0.18s ease, box-shadow 0.18s ease;
+        }
+
+        button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 18px 34px rgba(15, 118, 110, 0.26);
+        }
+
+        @media (max-width: 700px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            .score-grid {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+
+            .section {
+                padding: 20px 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <main class="page">
+        <section class="hero">
+            <span class="eyebrow">Anonim Bahalandyrma</span>
+            <h1>Mugallyma pikirini<br>ynam bilen bildir.</h1>
+            <p class="lead">
+                Bu sowalnama doly anonimdir. Mugallymy, dersi we sapak görnüşini saýlap,
+                soraglara 0-dan 5-e çenli baha beriň we isleseňiz gysga bellik goýuň.
+            </p>
+        </section>
+
+        <form class="shell" id="surveyForm" method="post">
+            {% csrf_token %}
+
+            <section class="section">
+                <h2 class="section-title">Esasy Maglumat</h2>
+                <div class="grid">
+                    <div class="field">
+                        <label for="teacherSelect">Mugallym</label>
+                        <select name="teacher" id="teacherSelect" required>
+                            <option value="">Mugallymy saýlaň</option>
+                            {% for teacher in teachers %}
+                                <option value="{{ teacher.id }}">{{ teacher.full_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="field">
+                        <label for="subjectSelect">Ders</label>
+                        <select name="subject" id="subjectSelect" required disabled>
+                            <option value="">Ilki mugallymy saýlaň</option>
+                        </select>
+                    </div>
+
+                    <div class="field full">
+                        <label for="lessonType">Sapak görnüşi</label>
+                        <select name="lesson_type" id="lessonType" required>
+                            {% for value, label in lesson_types %}
+                                <option value="{{ value }}">{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                        <p class="hint">Soraglar saýlanan sapak görnüşine görä awtomatiki täzelenýär.</p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="section">
+                <div class="questions-header">
+                    <h2 class="section-title">Soraglar</h2>
+                    <span class="questions-note">0 iň pes, 5 iň ýokary baha</span>
+                </div>
+                <div id="questionsContainer" class="empty-state">Soraglar ýüklenýär...</div>
+            </section>
+
+            <section class="section">
+                <div class="field full">
+                    <label for="comment">Goşmaça bellik</label>
+                    <textarea name="comment" id="comment" placeholder="Isleseňiz goşmaça pikir ýa-da teklip ýazyp bilersiňiz..."></textarea>
+                </div>
+            </section>
+
+            <section class="section">
+                <div class="submit-row">
+                    <p class="privacy-note">Adyňyz, toparyňyz ýa-da şahsy maglumatlaryňyz soralmaýar.</p>
+                    <button type="submit">Sowalnamany ugrat</button>
+                </div>
+            </section>
+        </form>
+    </main>
+
+    <script>
+        const teacherSelect = document.getElementById("teacherSelect");
+        const subjectSelect = document.getElementById("subjectSelect");
+        const lessonTypeSelect = document.getElementById("lessonType");
+        const questionsContainer = document.getElementById("questionsContainer");
+
+        function renderEmptyQuestions(message) {
+            questionsContainer.className = "empty-state";
+            questionsContainer.innerHTML = message;
+        }
+
+        function buildQuestionCard(question) {
+            const scores = [0, 1, 2, 3, 4, 5];
+            return `
+                <article class="question-card">
+                    <p class="question-text">${question.text}</p>
+                    <div class="score-grid">
+                        ${scores.map((score) => `
+                            <label class="score-option">
+                                <input type="radio" name="q_${question.id}" value="${score}" required>
+                                <span>${score}</span>
+                            </label>
+                        `).join("")}
+                    </div>
+                </article>
+            `;
+        }
+
+        async function loadSubjects() {
+            const teacherId = teacherSelect.value;
+            subjectSelect.disabled = true;
+
+            if (!teacherId) {
+                subjectSelect.innerHTML = '<option value="">Ilki mugallymy saýlaň</option>';
+                return;
+            }
+
+            subjectSelect.innerHTML = '<option value="">Dersler ýüklenýär...</option>';
+
+            const response = await fetch(`/get-subjects/${teacherId}/`);
+            const subjects = await response.json();
+
+            if (!subjects.length) {
+                subjectSelect.innerHTML = '<option value="">Bu mugallym üçin ders tapylmady</option>';
+                return;
+            }
+
+            subjectSelect.innerHTML = '<option value="">Dersi saýlaň</option>';
+            subjects.forEach((subject) => {
+                subjectSelect.insertAdjacentHTML(
+                    "beforeend",
+                    `<option value="${subject.id}">${subject.name}</option>`
+                );
+            });
+            subjectSelect.disabled = false;
+        }
+
+        async function loadQuestions() {
+            const lessonType = lessonTypeSelect.value;
+            renderEmptyQuestions("Soraglar ýüklenýär...");
+
+            const response = await fetch(`/get-questions/${lessonType}/`);
+            const questions = await response.json();
+
+            if (!questions.length) {
+                renderEmptyQuestions("Bu sapak görnüşi üçin häzirlikçe sorag ýok.");
+                return;
+            }
+
+            questionsContainer.className = "";
+            questionsContainer.innerHTML = questions.map(buildQuestionCard).join("");
+        }
+
+        teacherSelect.addEventListener("change", loadSubjects);
+        lessonTypeSelect.addEventListener("change", loadQuestions);
+        window.addEventListener("load", loadQuestions);
+    </script>
+</body>
+</html>

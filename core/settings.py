@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-1q$^@m(8=fz@3e4dbq845i^_46pf7(hr0=5ok9uu(v96#ewo)x
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["127.0.0.1", "localhost", "testserver"]
 
 
 # Application definition
@@ -104,9 +104,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
 
-LANGUAGE_CODE = 'tk'
+LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'Asia/Ashgabat'
+TIME_ZONE = 'UTC'
 
 USE_I18N = True
 
@@ -117,50 +117,6 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = 'static/'
-
-JAZZMIN_SETTINGS = {
-    "site_title": "Anketa Admin",
-    "site_header": "Anketa Dolandyrysh",
-    "site_brand": "Mugallym Baha",
-    "welcome_sign": "Ulgama hos geldiniz!",
-    "copyright": "Anketa Project",
-    "search_model": ["auth.User"],
-    "show_sidebar": True,
-    "navigation_expanded": True,
-    "topmenu_links": [
-        {"name": "Bas sahypa", "url": "admin:index", "permissions": ["auth.view_user"]},
-        {"app": "survey"},
-    ],
-    "icons": {
-        "auth": "fas fa-users-cog",
-        "auth.user": "fas fa-user",
-        "survey": "fas fa-poll-h",
-    },
-}
-
-JAZZMIN_UI_CONFIG = {
-    "navbar_small_text": False,
-    "footer_small_text": False,
-    "body_small_text": False,
-    "brand_small_text": False,
-    "brand_colour": "navbar-dark",
-    "accent": "accent-primary",
-    "navbar": "navbar-dark",
-    "no_navbar_border": False,
-    "navbar_fixed": True,
-    "layout_boxed": False,
-    "footer_fixed": False,
-    "sidebar_fixed": True,
-    "sidebar": "sidebar-dark-primary",
-    "sidebar_nav_small_text": False,
-    "sidebar_disable_expand": False,
-    "sidebar_nav_child_indent": False,
-    "sidebar_nav_compact_style": False,
-    "sidebar_nav_legacy_style": False,
-    "sidebar_nav_flat_style": False,
-    "theme": "default",
-    "dark_mode_theme": None,
-}
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field

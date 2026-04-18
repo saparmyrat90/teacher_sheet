@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="tk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sowalnama Kabul Edildi</title>
+    <style>
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: grid;
+            place-items: center;
+            padding: 24px;
+            background: linear-gradient(180deg, #eef7f5 0%, #f6efe4 100%);
+            font-family: Georgia, "Times New Roman", serif;
+            color: #1f2933;
+        }
+
+        .card {
+            width: min(100%, 640px);
+            background: rgba(255, 255, 255, 0.94);
+            border: 1px solid rgba(15, 118, 110, 0.12);
+            border-radius: 28px;
+            padding: 36px 28px;
+            box-shadow: 0 24px 50px rgba(15, 23, 42, 0.08);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 999px;
+            background: rgba(15, 118, 110, 0.1);
+            color: #115e59;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+
+        h1 {
+            margin: 16px 0 12px;
+            font-size: clamp(2rem, 4vw, 3rem);
+            line-height: 1;
+        }
+
+        p {
+            line-height: 1.7;
+            color: #52606d;
+        }
+
+        a {
+            display: inline-block;
+            margin-top: 12px;
+            padding: 13px 22px;
+            border-radius: 999px;
+            text-decoration: none;
+            background: #0f766e;
+            color: #fff;
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body>
+    <section class="card">
+        <span class="badge">Kabul edildi</span>
+        <h1>Jogabyňyz üstünlikli ugradyldy.</h1>
+        <p>
+            <strong>{{ teacher.full_name }}</strong> boýunça
+            <strong>{{ subject.name }}</strong> dersi üçin iberen bahalaryňyz saklandy.
+            Pikirleriňiz okuw hilini ýokarlandyrmaga kömek edýär.
+        </p>
+        <p>Sowalnama anonim görnüşde kabul edildi.</p>
+        <a href="{% url 'survey_home' %}">Täze sowalnama doldur</a>
+    </section>
+</body>
+</html>

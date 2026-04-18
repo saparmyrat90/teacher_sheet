@@ -2,3 +2,4 @@ django
 pandas
 openpyxl
 django-jazzmin
+numbers-parser
